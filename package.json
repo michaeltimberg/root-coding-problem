@@ -1,6 +1,6 @@
 {
   "name": "root-coding-exercise",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Coding exercise for Root Insurance.",
   "main": "server.js",
   "scripts": {

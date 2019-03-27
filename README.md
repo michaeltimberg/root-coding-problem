@@ -6,7 +6,7 @@ Can be found [here][1].
 
 ## Prerequisites
 
-Install either latest Node.js [Dubnium][2] or [Carbon][3].
+Install either latest Node.js [Dubnium][2] or [Carbon][3] ( both are active [Node.js LTS][4] ).
 
 That's it!  No `npm install` required ( optional for ESLint ).
 
@@ -15,7 +15,13 @@ That's it!  No `npm install` required ( optional for ESLint ).
 ### Run main:
 
 ```
-npm start
+npm start ./test/input.txt
+```
+
+or 
+
+```
+cat ./test/input.txt | npm start
 ```
 
 ### Run tests:
@@ -46,7 +52,7 @@ a custom `.eslint` with rules we all agreed upon, so taking this step should be 
  - Functional programming will be used as much as possible for this project, meaning:
    - as much encapsulation as possible
    
-_**Note**_: I attempted to make use of newer ES6 features in this repo., such as:
+**Note**: I attempted to make use of newer ES6 features in this repo., such as:
  - ES6 destructuring ( for objects and arrays )
 
 The initial commit for this repository shows the idiomatic scaffolding for JS-based backend applications:
@@ -102,6 +108,29 @@ const someFunc = async () => {
 patterns.  Simple, functional JS doesn't need to fall back on an `async`/`await` patten; yet, more complex functions
 would require it for readability.
 
+### Accepting Input
+
+The app. will be able to accept input via:
+ - command line arg. ( e.g. `npm start ./test/input.txt` )
+   - "promisified," reading files with `util`
+   - the file will be read when the `Promise` is called to be will `resolve`d
+   - the file reading happens all at once
+ - `stdin`
+   - truly async
+   - works with each line asynchronously ( using a listener for each `` `line` `` event )
+   - on a `` `close` `` event, can call another func. ( returns input text for now )
+ 
+This was done to show how I work with core API functions.  While `await`ing a `Promise` ( which is done when an
+enumerable `.then(() => {})` is called on a, "promisified," func. ) is blocking, most of the reading, writing, logic and
+report ( or final result ) creation will happen within that `Promise`.  This makes a majority of the app. non-blocking:
+something I am using to dealing with when building out backend microservies.
+
+**Note**: that passing the entire `process.stdin` is essential:
+the state of `process.stdin` or `process.stdout` can change during the handoff from calling `utils.acceptInput()` to
+calling either `acceptCommandLineArg()` or `acceptStdIn()`
+
+
+
 ## Branching
 
 Branching and merging is an essential part of any team's workflow ( Agile or Kanban; I have experience with both ) when
@@ -148,7 +177,7 @@ A `spawn` subprocess is superior to an `exec`-based one, because of the 200KB bu
 _**have**_ learned this the hard way ).
 
 `compare()` uses a direct string comparison ( `stringOne === stringTwo` ) instead of `.localCompare()`.  [Here's why]
-[2].
+[5].
 
 ## Side Notes:
 
@@ -167,4 +196,5 @@ _**have**_ learned this the hard way ).
 [1]: https://gist.github.com/dan-manges/1e1854d0704cb9132b74
 [2]: https://nodejs.org/dist/v10.15.3/
 [3]: https://nodejs.org/dist/v8.15.1/
-[2]: https://jsperf.com/localecompare/2
+[4]: https://nodejs.org/en/about/releases/
+[5]: https://jsperf.com/localecompare/2
