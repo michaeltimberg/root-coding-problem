@@ -24,6 +24,10 @@ const runner = tests => tests.forEach(test => {
     .catch(error => console.error(error))
 })
 
-const log = ({ command, expected, response, pass }) => console.log(`  ${command}: ${pass ? `✔` : `❌`}`)
+const log = ({ command, expected, response, pass }) => {
+  console.log(`  ${command}: ${pass ? `✔` : `❌`}`)
+
+  if (!pass) console.log(response)
+}
 
 module.exports.test = { runner }
