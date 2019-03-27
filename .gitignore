@@ -1,0 +1,6 @@
+# block IDE-specific config
+.idea
+
+# `node_mod.` should always be freshly installed/not comitted
+node_modules
+
