@@ -195,7 +195,21 @@ have also used Selenium and `webdriver` for behavior based regression testing.
 
 The main runner `test.runner()` is implemented in `./test/test.js` with it and all other helpers defined in
 `./test/utils/*` and expected results from `./test/data.js`.  This scaffolding matches idiomatic `mocha` and `chai`
-testing.
+testing.  It takes in an array of objects with the following key/value pair:
+
+```
+{
+  "command": string
+  "expected": {
+    "data": string,
+    "pass": boolean
+  }
+}
+```
+
+If the main test runner is expecting `Error`s from the main app ( e.g. if some `./test/input.txt` contains an improper
+`"Driver""` command ) then it needs to format the output and remove the stack ( which isn't needed for automated
+testing, but might be useful later or during manual testing ).
 
 A `spawn` subprocess is superior to an `exec`-based one, because of the 200KB buffer limit on the latter ( _yes_, I
 _**have**_ learned this the hard way ).

@@ -19,10 +19,16 @@ const run = ({ command, expected }) => {
 const runner = tests => tests.forEach(test => {
   return run(test)
     .then(resolve => resolve())
-    .then(result => compare(result))
+    .then(result => compare(result.expected.pass ? result : format(result)))
     .then(results => log(results))
     .catch(error => console.error(error))
 })
+
+const format = ({ command, expected, response }) => {
+  response = response.split(`\n`).reduce((response, line) => /^\s/.test(line) ? response : response + line + `\n`, ``)
+
+  return ({ command, expected, response })
+}
 
 const log = ({ command, expected, response, pass }) => {
   console.log(`  ${command}: ${pass ? `✔` : `❌`}`)
@@ -31,7 +37,7 @@ const log = ({ command, expected, response, pass }) => {
 }
 
 const logHelper = ({ expected, response }) => {
-  const [expectedSplit, responseSplit] = [expected.split(`\n`), response.split(`\n`)]
+  const [expectedSplit, responseSplit] = [expected.data.split(`\n`), response.split(`\n`)]
   const indent = expectedSplit.reduce((indent, line) => line.length > indent ? line.length : indent, 0)
 
   console.log(`    Expected:${` `.repeat(indent - 7)}Actual:`)
