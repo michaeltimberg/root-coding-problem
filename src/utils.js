@@ -2,10 +2,14 @@ const fileSystem = require(`fs`)
 const readLine = require(`readline`)
 const util = require(`util`)
 
-const acceptInput = ({ commandLineArg, stdin }) => {
+const error = require(`./lib/error`)
+
+const acceptInput = ({ commandLineArg, stdin, isTTY }) => {
   return commandLineArg
     ? acceptCommandLineArg(commandLineArg).then(report => report).catch(error => error)
-    : acceptStdIn(stdin).then(report => report).catch(error => error)
+    : !isTTY
+      ? acceptStdIn(stdin).then(report => report).catch(error => error)
+      : error.create(`No \`stdin\` or command line arg. given.`)
 }
 
 const acceptCommandLineArg = commandLineArg => {

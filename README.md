@@ -179,6 +179,29 @@ _**have**_ learned this the hard way ).
 `compare()` uses a direct string comparison ( `stringOne === stringTwo` ) instead of `.localCompare()`.  [Here's why]
 [5].
 
+## Error Handling
+
+Errors based on user error ( `400`s when dealing with a REST API ) should _not_ be fatal or unrecoverable.  For the
+purposes of this app., errors should be given during output ( `"Error": { message, stack }` ) and _not_ halt or block
+any other async. calls made.  Errors on behalf of the program ( `500`s if dealing with a REST API ) either return an
+`Error` obj. or are caught during an async `await`/`Promise.resolve()` call should halt all proceeding async. calls.
+
+**Note**: `error.create()` was introduced as a bugfix in order to prevent stalling on `stdin` if no input is given; i.e.
+IFF:
+
+```
+npm start
+``` 
+
+or
+
+```
+node server.js
+``` 
+
+The error handler here ( `./src/lib/error.js` ) is placed idiomatically, but should be more complex if this was built
+out as a REST API ( e.g. return `error.type` and other properties in JSON res. ) 
+
 ## Side Notes:
 
  - "JavaScript," or, "JS," are both used to refer to either  ECMAscript 6 and 7 in this doc.
@@ -192,6 +215,10 @@ _**have**_ learned this the hard way ).
  - In this `README.md` and throughout the codebase, you may notice the 120 char. max line width I code by
  - I am aware of all of the dependencies of `standard`: however, you _should_ be able to run the main `server.js` file and the
  test runner without an `npm install`
+ - Because `process.stdin` is fed into our main func. ( `utils.acceptInput()` ), we can analyze it at any time without a
+ change of state; in other words, and because either `stdin` or a command line arg. can be given, using a terenary
+ operator I can easily decipher blank `stdin` without scanning `/dev/null` using the `process.stdin.isTTY` property (
+ `stdin` is of type `Pipe` when piping a command through, and type `TTY` when run with a command line arg. )
 
 [1]: https://gist.github.com/dan-manges/1e1854d0704cb9132b74
 [2]: https://nodejs.org/dist/v10.15.3/
