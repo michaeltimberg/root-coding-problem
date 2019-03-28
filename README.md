@@ -129,7 +129,18 @@ something I am using to dealing with when building out backend microservies.
 the state of `process.stdin` or `process.stdout` can change during the handoff from calling `utils.acceptInput()` to
 calling either `acceptCommandLineArg()` or `acceptStdIn()`
 
+### Versioning
 
+Found in `./package.json`.
+
+If α.β.ω denotes a version:
+ - α being the major version ( will only go from `0` to `1` in our case )
+ - β being the minor version
+ - ω being the patch version
+ 
+then each branch off `master` will increment β by `1` and each `commit` will increment ω by `1`.
+
+**Note**: In practice, each `commit` _wouldn't_ justify incrementing ω by `1`, I felt that this was good practice.
 
 ## Branching
 
@@ -201,6 +212,10 @@ node server.js
 
 The error handler here ( `./src/lib/error.js` ) is placed idiomatically, but should be more complex if this was built
 out as a REST API ( e.g. return `error.type` and other properties in JSON res. ) 
+
+In order to aid in debugging, the main log func. ( `log()` ) was given a helper ( `logHelper()` ) to deal with test
+failures: by logging each line of `expected` alongside each line of `actual`.  `mocha`/`chai` do this natively with HTTP
+codes ( e.g. receiving a `404` instead of a `200` or `204` during testing ).
 
 ## Side Notes:
 

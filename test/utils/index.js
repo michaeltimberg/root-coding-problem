@@ -27,7 +27,18 @@ const runner = tests => tests.forEach(test => {
 const log = ({ command, expected, response, pass }) => {
   console.log(`  ${command}: ${pass ? `✔` : `❌`}`)
 
-  if (!pass) console.log(response)
+  if (!pass) return logHelper({ expected, response })
+}
+
+const logHelper = ({ expected, response }) => {
+  const [expectedSplit, responseSplit] = [expected.split(`\n`), response.split(`\n`)]
+  const indent = expectedSplit.reduce((indent, line) => line.length > indent ? line.length : indent, 0)
+
+  console.log(`    Expected:${` `.repeat(indent - 7)}Actual:`)
+
+  expectedSplit.forEach(line => {
+    console.log(`   `, line, ` `.repeat(indent - line.length), responseSplit.shift())
+  })
 }
 
 module.exports.test = { runner }
