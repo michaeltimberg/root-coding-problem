@@ -2,7 +2,9 @@ const fileSystem = require(`fs`)
 const readLine = require(`readline`)
 const util = require(`util`)
 
+const driver = require(`./driver`)
 const error = require(`./lib/error`)
+const { report } = require(`./report`)
 
 const acceptInput = ({ commandLineArg, stdin, isTTY }) => {
   return commandLineArg
@@ -13,19 +15,27 @@ const acceptInput = ({ commandLineArg, stdin, isTTY }) => {
 }
 
 const acceptCommandLineArg = commandLineArg => {
+  let driverStore = initiateStore()
+
   const readFileAsync = util.promisify(fileSystem.readFile)
 
-  return readFileAsync(commandLineArg, `utf8`).catch(error => console.log(`Error`, error))
+  return readFileAsync(commandLineArg, `utf8`)
+    .then(data => data.trim().split(`\n`).forEach(line => driver.register(driverStore, line)))
+    .then(() => report(driverStore))
+    .catch(error => console.log(`Error`, error))
 }
 
 const acceptStdIn = stdin => {
+  let driverStore = initiateStore()
+
   return new Promise(resolve => {
     const readLinesInterface = readLine.createInterface({ input: stdin })
-    let report = ``
 
-    readLinesInterface.on(`line`, line => { report += line + `\n` })
-    readLinesInterface.on(`close`, () => resolve(report))
+    readLinesInterface.on(`line`, line => driver.register(driverStore, line))
+    readLinesInterface.on(`close`, () => resolve(report(driverStore)))
   })
 }
+
+const initiateStore = () => new Set()
 
 module.exports.acceptInput = acceptInput

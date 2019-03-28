@@ -51,9 +51,12 @@ a custom `.eslint` with rules we all agreed upon, so taking this step should be 
  - OOP is **NOT** idiomatic to JavaScript ( save prototypal inheritance )
  - Functional programming will be used as much as possible for this project, meaning:
    - as much encapsulation as possible
+   - `.map().reduce()` and `.forEach()` instead of a `for. .of` loop
+   - terenary operators ( `? :` ) can provide clean `return` values for func.
    
 **Note**: I attempted to make use of newer ES6 features in this repo., such as:
  - ES6 destructuring ( for objects and arrays )
+ - spread syntax: `...`
 
 The initial commit for this repository shows the idiomatic scaffolding for JS-based backend applications:
 
@@ -129,6 +132,16 @@ something I am using to dealing with when building out backend microservies.
 the state of `process.stdin` or `process.stdout` can change during the handoff from calling `utils.acceptInput()` to
 calling either `acceptCommandLineArg()` or `acceptStdIn()`
 
+### Drivers
+
+Because data shouldn't be persisted to disk for this exercise, I initially wanted to model data storage after Mongo
+`collections`.  However, the `driverStore` would only have keys without values; i.e. only a driver's name; `Set`s are
+much faster and require less memory than generating an `Array` of `Object` literals: [shown here][6].
+
+**Note**: keeping a reference to a `Set` with drivers in `./src/utils`, calling referenced func. asynchronously and then
+passing a result back to `server.js` is in-line with the `{ req, res, next }` that are all passed from authentication to
+authorization to middleware checks to a function found in `./src/routes`. 
+
 ### Versioning
 
 Found in `./package.json`.
@@ -188,7 +201,7 @@ A `spawn` subprocess is superior to an `exec`-based one, because of the 200KB bu
 _**have**_ learned this the hard way ).
 
 `compare()` uses a direct string comparison ( `stringOne === stringTwo` ) instead of `.localCompare()`.  [Here's why]
-[5].
+[6].
 
 ## Error Handling
 
@@ -234,9 +247,12 @@ codes ( e.g. receiving a `404` instead of a `200` or `204` during testing ).
  change of state; in other words, and because either `stdin` or a command line arg. can be given, using a terenary
  operator I can easily decipher blank `stdin` without scanning `/dev/null` using the `process.stdin.isTTY` property (
  `stdin` is of type `Pipe` when piping a command through, and type `TTY` when run with a command line arg. )
+ - Func. are sorted in a file first in alphabetical order, then the order in which they are referenced by above func.
+ for readability
 
-[1]: https://gist.github.com/dan-manges/1e1854d0704cb9132b74
-[2]: https://nodejs.org/dist/v10.15.3/
-[3]: https://nodejs.org/dist/v8.15.1/
-[4]: https://nodejs.org/en/about/releases/
-[5]: https://jsperf.com/localecompare/2
+[1]: gist.github.com/dan-manges/1e1854d0704cb9132b74
+[2]: nodejs.org/dist/v10.15.3/
+[3]: nodejs.org/dist/v8.15.1/
+[4]: nodejs.org/en/about/releases/
+[5]: stackoverflow.com/a/46190569/5963316
+[6]: jsperf.com/localecompare/2
