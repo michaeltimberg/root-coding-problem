@@ -2,8 +2,9 @@ const fileSystem = require(`fs`)
 const readLine = require(`readline`)
 const util = require(`util`)
 
+const { check } = require(`./middleware`)
 const driver = require(`./driver`)
-const error = require(`./lib/error`)
+const { error } = require(`./lib/error`)
 const { report } = require(`./report`)
 
 const acceptInput = ({ commandLineArg, stdin, isTTY }) => {
@@ -11,7 +12,7 @@ const acceptInput = ({ commandLineArg, stdin, isTTY }) => {
     ? acceptCommandLineArg(commandLineArg).then(report => report).catch(error => error)
     : !isTTY
       ? acceptStdIn(stdin).then(report => report).catch(error => error)
-      : error.create(`No \`stdin\` or command line arg. given.`)
+      : error.promise(`No \`stdin\` or command line arg. given.`)
 }
 
 const acceptCommandLineArg = commandLineArg => {
@@ -20,7 +21,7 @@ const acceptCommandLineArg = commandLineArg => {
   const readFileAsync = util.promisify(fileSystem.readFile)
 
   return readFileAsync(commandLineArg, `utf8`)
-    .then(data => data.trim().split(`\n`).forEach(line => driver.register(driverStore, line)))
+    .then(data => data.trim().split(`\n`).forEach(line => process(driverStore, line)))
     .then(() => report(driverStore))
     .catch(error => console.log(`Error`, error))
 }
@@ -31,11 +32,18 @@ const acceptStdIn = stdin => {
   return new Promise(resolve => {
     const readLinesInterface = readLine.createInterface({ input: stdin })
 
-    readLinesInterface.on(`line`, line => driver.register(driverStore, line))
+    readLinesInterface.on(`line`, line => process(driverStore, line))
     readLinesInterface.on(`close`, () => resolve(report(driverStore)))
   })
 }
 
 const initiateStore = () => new Set()
+
+const process = (driverStore, line) => {
+  const lineArray = line.match(/\S+/g).slice(1)
+  const [driverName] = lineArray
+
+  if (check.driver(lineArray)) driver.register(driverStore, driverName)
+}
 
 module.exports.acceptInput = acceptInput

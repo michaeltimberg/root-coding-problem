@@ -224,7 +224,7 @@ purposes of this app., errors should be given during output ( `"Error": { messag
 any other async. calls made.  Errors on behalf of the program ( `500`s if dealing with a REST API ) either return an
 `Error` obj. or are caught during an async `await`/`Promise.resolve()` call should halt all proceeding async. calls.
 
-**Note**: `error.create()` was introduced as a bugfix in order to prevent stalling on `stdin` if no input is given; i.e.
+**Note**: `error.promise()` was introduced as a bugfix in order to prevent stalling on `stdin` if no input is given; i.e.
 IFF:
 
 ```
@@ -238,7 +238,7 @@ node server.js
 ``` 
 
 The error handler here ( `./src/lib/error.js` ) is placed idiomatically, but should be more complex if this was built
-out as a REST API ( e.g. return `error.type` and other properties in JSON res. ) 
+out as a REST API ( e.g. return `error.type` and other properties in JSON res. ). 
 
 In order to aid in debugging, the main log func. ( `log()` ) was given a helper ( `logHelper()` ) to deal with test
 failures: by logging each line of `expected` alongside each line of `actual`.  `mocha`/`chai` do this natively with HTTP

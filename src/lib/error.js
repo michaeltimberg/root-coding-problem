@@ -1,3 +1,5 @@
-const create = message => new Promise(resolve => resolve(new Error(message).stack))
+const promise = message => new Promise(resolve => resolve(new Error(message).stack))
 
-module.exports.create = create
+const log = message => console.log(new Error(message).stack)
+
+module.exports.error = { log, promise }
