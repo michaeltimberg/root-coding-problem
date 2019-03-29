@@ -13,3 +13,5 @@ Trip Bob 0:30 0:00 30.0
 Trip Bob 11:00am 12:00pm 60.0
 Trip Bob 11:00 12:00 6O.O
 Trip Alex 00:00 00:30 30.0
+
+Remove Bob
