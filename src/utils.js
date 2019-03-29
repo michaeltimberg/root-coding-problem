@@ -3,7 +3,7 @@ const readLine = require(`readline`)
 const util = require(`util`)
 
 const { check } = require(`./middleware`)
-const driver = require(`./driver`)
+const { driver } = require(`./driver`)
 const { error } = require(`./lib/error`)
 const { trip } = require(`./trip`)
 
@@ -47,8 +47,13 @@ const commandSelector = (driverStore, tripStore, line) => {
 
   const command = lineArray.shift()
   const [driverName] = lineArray
+
   if (command === `Driver` && check.driver(lineArray)) return driver.register(driverStore, driverName)
-  if (command === `Trip`) return trip.record(tripStore, lineArray)
+  if (command === `Trip` && check.trip(lineArray)) {
+    return driver.isRegistered(driverStore, driverName)
+      ? trip.record(tripStore, lineArray)
+      : error.log(`Driver \`"${driverName}"\` not registered.`)
+  }
 }
 
 module.exports.acceptInput = acceptInput

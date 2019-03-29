@@ -1,3 +1,5 @@
+const { error } = require(`./lib/error`)
+
 const record = (tripStore, lineArray) => {
   const [name, start, end] = lineArray
   const miles = +lineArray[3]
@@ -5,6 +7,7 @@ const record = (tripStore, lineArray) => {
   const hours = hourDifference(start, end)
   const mph = Math.round(miles / hours)
 
+  if (hours < 0) return error.log(`\`"Trip"\` start greater than \`"Trip"\` end.`)
   if (mph > 5 && mph < 100) return tripStore.push({ name, hours, miles })
 }
 

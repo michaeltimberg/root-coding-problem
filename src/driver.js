@@ -8,4 +8,4 @@ const register = (driverStore, driver) => {
     : error.log(`\`"Driver"\` already registered!`)
 }
 
-module.exports.register = register
+module.exports.driver = { isRegistered, register }
