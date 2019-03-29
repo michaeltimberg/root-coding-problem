@@ -48,6 +48,7 @@ const commandSelector = (driverStore, tripStore, line) => {
   const command = lineArray.shift()
   const [driverName] = lineArray
 
+  if ([`Driver`, `Trip`].indexOf(command) === -1) return error.log(`Command \`"${command}"\` not recognized.`)
   if (command === `Driver` && check.driver(lineArray)) return driver.register(driverStore, driverName)
   if (command === `Trip` && check.trip(lineArray)) {
     return driver.isRegistered(driverStore, driverName)
