@@ -1,2 +1,24 @@
 Driver Dan
 Driver Alex
+Trip Dan 07:57 08:12 25.1
+Trip Alex 08:31 09:01 33.6
+Trip Dan 18:13 18:38 25.0
+Trip Alex 17:11 17:56 33.3
+Trip Dan 07:43 08:02 25.1
+Trip Alex 07:33 08:09 33.6
+Trip Dan 18:16 18:48 25.0
+Trip Alex 17:06 17:56 33.3
+Trip Dan 07:37 08:07 25.8
+Trip Alex 08:11 08:46 33.6
+Trip Dan 18:47 19:32 47.9
+Trip Dan 19:34 19:48 13.7
+Trip Alex 16:48 17:16 33.3
+Trip Dan 07:36 08:00 25.1
+Trip Alex 07:01 07:26 33.6
+Trip Dan 17:32 17:57 25.0
+Trip Alex 17:27 17:53 33.3
+Trip Dan 08:22 08:40 26.3
+Trip Alex 08:01 08:40 33.6
+Trip Dan 15:12 15:22 1.2
+Trip Dan 19:32 20:03 24.0
+Trip Alex 14:01 14:45 33.3

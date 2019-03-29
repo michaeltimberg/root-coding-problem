@@ -1,6 +1,6 @@
 const expected = [
-  `Dan: 0 miles\n` +
-  `Alex: 0 miles\n`,
+  `Alex: 335 miles @ 56 mph\n` +
+  `Dan: 264 miles @ 58 mph\n`,
   //
   `Error: No \`"Driver"\` name given!\n` +
   `Error: Bad format for \`"Driver"\` command.\n` +
