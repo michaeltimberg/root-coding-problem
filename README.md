@@ -40,7 +40,7 @@ Following the guidelines from the problem statement, my solution should not:
 Which, through the lens of idiomatic JavaScript, means:
  - absence of NoSQL for event-based data ( trips )
  - absence of SQL for relational data ( drivers )
- - minimal use of NPM packages: anti-pattern for most JS developers
+ - minimal use of NPM packages ( anti-pattern for most JS developers )
  - no CI/CD
  - no building ( i.e. Docker images ) or external run tools
  
@@ -68,28 +68,37 @@ package.json
 package-lock.json
 ```
 
-Providing a streamlined build procress ( `docker build .` with a properly organized `Dockerfile` ).
-Scaffolding for `src/` and `test/` to be revealed later.
+Providing a streamlined build procress ( `docker build .` with a properly organized `Dockerfile` ).  If this was a
+gateway for microservices, `./src/driver.js`, `./src/trip.js` and `./src/utils.js` would be placed in their respective
+`./src/routes` or `./src/services` folders; middlewares can grow faster than new services, so `./src/middleware` would
+become its own dir. 
 
-Plans, in order, from this commit onward:
+Proper structure for `./test/`:
+
+```
+utils/
+data.js
+test.js
+```
+
+Using `git log`, you can see the dev. in steps:
  1. Traditional `"Hello world!"` output
  2. Build out test runner
  3. Accept input from either a command line arg. or `stdin`
- 4. Accept correct `"Driver"` command
+ 4. Accept correct `"Driver"` command and output correct report
  5. Handle incorrect `"Driver"` commands
  6. Accept correct `"Trip"` command
  7. Handle incorrect `"Trip"` commands
- 8. Output correct report
- 9. Handle incorrect commands ( anything other than `"Driver"` or `"Trip"` )
+ 8. Handle incorrect commands ( anything other than `"Driver"` or `"Trip"` )
 
 ### Why native `Promise` wrappers?
 
  - Using `bluebird`'s `Promise` constructor has been idiomatic since ES5
  - I don't have to import `bluebird` if I'm only using native promises
 
-The use of Promises and `async`/`await` is core to backend JS dev. and the core API functions ( pre 1.0.0 ) _are_
- async. in nature, but **don't** return a `Promise <pending>`.  Say newer developers were brought on to work with me on
- this project: they would expect the: 
+The use of Promises and `async`/`await` is core to backend JS dev. and the core API functions ( pre 1.0.0 ) _are_ async.
+in nature, but **don't** return a `Promise <pending>`.  Say newer developers were brought on to work with me on
+this project: they would expect the: 
  
 ```
 const someFunc = () => promisifiedFunc().then(result => something(result).catch(err => err) )
@@ -119,18 +128,18 @@ The app. will be able to accept input via:
    - the file will be read when the `Promise` is called to be will `resolve`d
    - the file reading happens all at once
  - `stdin`
-   - truly async
+   - truly async.
    - works with each line asynchronously ( using a listener for each `` `line` `` event )
    - on a `` `close` `` event, can call another func. ( returns input text for now )
  
 This was done to show how I work with core API functions.  While `await`ing a `Promise` ( which is done when an
 enumerable `.then(() => {})` is called on a, "promisified," func. ) is blocking, most of the reading, writing, logic and
 report ( or final result ) creation will happen within that `Promise`.  This makes a majority of the app. non-blocking:
-something I am using to dealing with when building out backend microservies.
+something I am used to dealing with when building out backend microservies.
 
-**Note**: that passing the entire `process.stdin` is essential:
-the state of `process.stdin` or `process.stdout` can change during the handoff from calling `utils.acceptInput()` to
-calling either `acceptCommandLineArg()` or `acceptStdIn()`
+**Note**: that passing the entire `process.stdin` is essential: the state of `process.stdin` or `process.stdout` can
+change during the handoff from calling `utils.acceptInput()` to calling either `acceptCommandLineArg()` or
+`acceptStdIn()`.
 
 ### Drivers
 
@@ -140,9 +149,9 @@ much faster and require less memory than generating an `Array` of `Object` liter
 
 **Note**: keeping a reference to a `Set` with drivers in `./src/utils`, calling referenced func. asynchronously and then
 passing a result back to `server.js` is in-line with the `{ req, res, next }` that are all passed from authentication to
-authorization to middleware checks to a function found in `./src/routes`. 
+authorization to middleware checks to a function found in `./src/routes` for an Express-based microserv. 
 
-## Trips
+### Trips
 
 I was tempted to bring in `moment`, as I'm used to working with, and turning both start and end times into unix
 timestamps for easy manipulation; but `hourDifference()` works as well.
@@ -152,7 +161,17 @@ command: `"Driver"` or `"Driver Bob Alex""` ) and there are cases when user inpu
 trip has an average speed of under 5 or over 100 miles an hour.  Disregarding trips with average speeds above or below a
 threshold is expected behaviour ( event reporting ), and should see errors if giving this app. unacceptable input.  This
 is paralleled by my current work: designing a backend that won't send an IoT hub a `400` based on inaccurate GPS speed
-readings, for instance. 
+readings, for instance.
+
+### Output
+
+I made the decision for the report to appear in `stdout` ( by calling either `process.stdout.write()` or
+`console.log()`, a wrapper for the previous ) to give the user flexibility to either check output or write that output
+to a file:
+
+```
+cat ./test/input.txt | npm start > report.txt
+```
 
 ### Versioning
 
@@ -166,6 +185,63 @@ If α.β.ω denotes a version:
 then each branch off `master` will increment β by `1` and each `commit` will increment ω by `1`.
 
 **Note**: In practice, each `commit` _wouldn't_ justify incrementing ω by `1`, I felt that this was good practice.
+
+### `Dockerfile`
+
+With my ops. background, I couldn't help but offer up a sample `Dockerfile` for theoretical building of this project:
+
+```dockerfile
+FROM node:dubnium-stretch AS intermediate
+
+ARG NPM_TOKEN
+
+COPY [".npmrc", "./"]
+
+RUN ["chmod", "0600", ".npmrc"]
+
+COPY ["package.json", "./"]
+
+RUN ["npm", "install", "--only=production"]
+
+FROM node:dubnium-stretch
+
+ARG GIT_COMMIT=unknown
+
+WORKDIR /usr/src/app/
+
+COPY --from=intermediate ["node_modules/.", "./node_modules/."]
+
+COPY ["entrypoint.js", "health-check.js", "package.json", "server.js", "./"]
+COPY ["test/.", "./test/"]
+COPY ["src/.", "./src/"]
+
+RUN ["chmod", "+x", "./health-check.js"]
+
+HEALTHCHECK CMD ["node", "/usr/src/app/health-check.js"]
+
+ENTRYPOINT ["node", "entrypoint.js"]
+
+ENV GIT_COMMIT=${GIT_COMMIT}
+
+LABEL commit=${GIT_COMMIT}
+
+```
+
+to be used with:
+
+```
+docker build \
+  --build-arg NPM_TOKEN=${NPM_TOKEN} \
+  --build-arg GIT_COMMIT=$(git rev-parse HEAD) \
+  --tag root-coding-problem:latest \
+  .
+```
+
+given:
+ - private npm packages req. an `.npmrc` with an NPM token
+ - running `./server.js` in a `spawn`-based subprocess ( `./entrypoint.js` ) in order to read an `.env` file from a bucket and not expose env.
+ var. to entire running container
+ - external healthcheck: `./health-check.js` ( if this was a REST API, the healthcheck would be an internal route )
 
 ## Branching
 
@@ -220,24 +296,24 @@ testing.  It takes in an array of objects with the following key/value pair:
 ```
 
 If the main test runner is expecting `Error`s from the main app ( e.g. if some `./test/input.txt` contains an improper
-`"Driver""` command ) then it needs to format the output and remove the stack ( which isn't needed for automated
-testing, but might be useful later or during manual testing ).
+`"Driver""` command ) then it needs to format the output and remove the stack ( which isn't needed for the automated
+testing done here, but might be useful later or during manual testing ).
 
 A `spawn` subprocess is superior to an `exec`-based one, because of the 200KB buffer limit on the latter ( _yes_, I
-_**have**_ learned this the hard way ).
+_**have**_ learned this the hard way ), described [here][6].
 
 `compare()` uses a direct string comparison ( `stringOne === stringTwo` ) instead of `.localCompare()`.  [Here's why]
-[6].
+[7].
 
 ## Error Handling
 
 Errors based on user error ( `400`s when dealing with a REST API ) should _not_ be fatal or unrecoverable.  For the
 purposes of this app., errors should be given during output ( `"Error": { message, stack }` ) and _not_ halt or block
 any other async. calls made.  Errors on behalf of the program ( `500`s if dealing with a REST API ) either return an
-`Error` obj. or are caught during an async `await`/`Promise.resolve()` call should halt all proceeding async. calls.
+`Error` obj. or are caught during an async. `await`/`Promise.resolve()` call should halt all proceeding async. calls.
 
-**Note**: `error.promise()` was introduced as a bugfix in order to prevent stalling on `stdin` if no input is given; i.e.
-IFF:
+**Note**: `error.promise()` was introduced as a bugfix in order to prevent stalling on `stdin` if no input is given;
+i.e. IFF:
 
 ```
 npm start
@@ -267,18 +343,21 @@ codes ( e.g. receiving a `404` instead of a `200` or `204` during testing ).
  `./src/configuration/config.js` )
  - Took the use of "✓" from `mocha` 
  - In this `README.md` and throughout the codebase, you may notice the 120 char. max line width I code by
- - I am aware of all of the dependencies of `standard`: however, you _should_ be able to run the main `server.js` file and the
- test runner without an `npm install`
+ - I am aware of all of the dependencies of `standard`: however, you _should_ be able to run the main `server.js` file
+ and the test runner without an `npm install`
  - Because `process.stdin` is fed into our main func. ( `utils.acceptInput()` ), we can analyze it at any time without a
  change of state; in other words, and because either `stdin` or a command line arg. can be given, using a terenary
  operator I can easily decipher blank `stdin` without scanning `/dev/null` using the `process.stdin.isTTY` property (
  `stdin` is of type `Pipe` when piping a command through, and type `TTY` when run with a command line arg. )
  - Func. are sorted in a file first in alphabetical order, then the order in which they are referenced by above func.
  for readability
+ - Would have preferred a JSON-based API: making incoming data parse more reliably and allowing me to demonstrate my
+ previous experience with Express and microserv.
 
 [1]: gist.github.com/dan-manges/1e1854d0704cb9132b74
 [2]: nodejs.org/dist/v10.15.3/
 [3]: nodejs.org/dist/v8.15.1/
 [4]: nodejs.org/en/about/releases/
 [5]: stackoverflow.com/a/46190569/5963316
-[6]: jsperf.com/localecompare/2
+[6]: github.com/nodejs/node/issues/4236
+[7]: jsperf.com/localecompare/2
