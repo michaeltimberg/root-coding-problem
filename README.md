@@ -142,6 +142,18 @@ much faster and require less memory than generating an `Array` of `Object` liter
 passing a result back to `server.js` is in-line with the `{ req, res, next }` that are all passed from authentication to
 authorization to middleware checks to a function found in `./src/routes`. 
 
+## Trips
+
+I was tempted to bring in `moment`, as I'm used to working with, and turning both start and end times into unix
+timestamps for easy manipulation; but `hourDifference()` works as well.
+
+**Note**: there are cases when an `Error` should be communicated back to the client ( e.g. misuse of the `"Driver"`
+command: `"Driver"` or `"Driver Bob Alex""` ) and there are cases when user input shouldn't generate an `Error`: if a
+trip has an average speed of under 5 or over 100 miles an hour.  Disregarding trips with average speeds above or below a
+threshold is expected behaviour ( event reporting ), and should see errors if giving this app. unacceptable input.  This
+is paralleled by my current work: designing a backend that won't send an IoT hub a `400` based on inaccurate GPS speed
+readings, for instance. 
+
 ### Versioning
 
 Found in `./package.json`.

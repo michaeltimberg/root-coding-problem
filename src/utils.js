@@ -5,7 +5,7 @@ const util = require(`util`)
 const { check } = require(`./middleware`)
 const driver = require(`./driver`)
 const { error } = require(`./lib/error`)
-const { report } = require(`./report`)
+const { trip } = require(`./trip`)
 
 const acceptInput = ({ commandLineArg, stdin, isTTY }) => {
   return commandLineArg
@@ -16,34 +16,39 @@ const acceptInput = ({ commandLineArg, stdin, isTTY }) => {
 }
 
 const acceptCommandLineArg = commandLineArg => {
-  let driverStore = initiateStore()
-
   const readFileAsync = util.promisify(fileSystem.readFile)
 
+  let [driverStore, tripStore] = initiateStore()
+
   return readFileAsync(commandLineArg, `utf8`)
-    .then(data => data.trim().split(`\n`).forEach(line => process(driverStore, line)))
-    .then(() => report(driverStore))
+    .then(data => data.trim().split(`\n`))
+    .then(dataArray => dataArray.forEach(line => commandSelector(driverStore, tripStore, line)))
+    .then(() => trip.report(driverStore, tripStore))
     .catch(error => console.log(`Error`, error))
 }
 
 const acceptStdIn = stdin => {
-  let driverStore = initiateStore()
+  let [driverStore, tripStore] = initiateStore()
 
   return new Promise(resolve => {
     const readLinesInterface = readLine.createInterface({ input: stdin })
 
-    readLinesInterface.on(`line`, line => process(driverStore, line))
-    readLinesInterface.on(`close`, () => resolve(report(driverStore)))
+    readLinesInterface.on(`line`, line => commandSelector(driverStore, tripStore, line))
+    readLinesInterface.on(`close`, () => resolve(trip.report(driverStore, tripStore)))
   })
 }
 
-const initiateStore = () => new Set()
+const initiateStore = () => [new Set(), []]
 
-const process = (driverStore, line) => {
-  const lineArray = line.match(/\S+/g).slice(1)
+const commandSelector = (driverStore, tripStore, line) => {
+  const lineArray = line.match(/\S+/g) || []
+
+  if (!lineArray.length) return
+
+  const command = lineArray.shift()
   const [driverName] = lineArray
-
-  if (check.driver(lineArray)) driver.register(driverStore, driverName)
+  if (command === `Driver` && check.driver(lineArray)) return driver.register(driverStore, driverName)
+  if (command === `Trip`) return trip.record(tripStore, lineArray)
 }
 
 module.exports.acceptInput = acceptInput
