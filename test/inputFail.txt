@@ -2,3 +2,14 @@ Driver
 Driver Bob Alex
 Driver Bob
 Driver Bob
+
+Trip
+Trip Bob
+Trip Bob 00:00 00:30 50.1
+Trip Bob 00:00 00:30 2.4
+Trip Bob 00:00 0:30 30.0
+Trip Bob 0:00 00:30 30.0
+Trip Bob 0:30 0:00 30.0
+Trip Bob 11:00am 12:00pm 60.0
+Trip Bob 11:00 12:00 6O.O
+Trip Alex 00:00 00:30 30.0
